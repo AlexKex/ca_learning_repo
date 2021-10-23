@@ -1,6 +1,6 @@
 <?php
-echo "db.lib <br>";
-function setupConnection() { 
+
+ function setupConnection() : mysqli{ 
     $configuration = parse_ini_file('config.ini', true);
 
     $link = mysqli_connect(
@@ -10,11 +10,11 @@ function setupConnection() {
         $configuration['db']['datebase']
     );
     
-    if(!$link){
-        echo "Невозможно подключиться к БД";
-        die();
-    } else {
-        echo "Успешное соединение <br>";
+    if($link === false){
+        die("ERROR: Ошибка подключения. " . mysqli_connect_error());
+    }
+    else {
+        //echo "Успешное соединение с БД <br>";
     }
     return $link;
 }

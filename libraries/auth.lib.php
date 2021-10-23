@@ -1,7 +1,7 @@
 <?php
-echo "auth.lib <br>";
-function validatePasswordWithDatabase($login, $password, $remember = false) {
-    $user = getUserByLogin();
+
+function validatePasswordWithDatabase(string $login, string $password, bool $remember = false) {
+    $user = getUserByLogin($login);
     
   if(!empty($user)){
         if(password_verify($password, $user['pass'])){
@@ -18,14 +18,21 @@ function validatePasswordWithDatabase($login, $password, $remember = false) {
         }
     } 
 
-function rememberUser($passhash, $login){
+function rememberUser($passhash, $login) {
     $token = $passhash . md5($login);
     setcookie("user_token", $token, time()+7*24*3600);
     setcookie("user_login", $login, time()+7*24*3600);
+    echo $passhash;
 }
 
-// Функция проверки фвторизации пользователя по cookie
-function checkCookie(){ 
+function getUsertime(){ 
+    $date = date("U");
+    $user_time = ($date - $_SESSION['session_time']);
+  echo "Вы провели на сайте " . $user_time . " секунд <br>"; 
+  }
+
+// Функция проверки авторизации пользователя по cookie
+function checkCookie(): bool{ 
     if(isset($_COOKIE['user_token']) && isset($_COOKIE['user_login'])) {
         $token = $_COOKIE['user_token'];
         $login = $_COOKIE['user_login'];
