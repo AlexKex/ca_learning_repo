@@ -1,6 +1,6 @@
 <?php
 
-$configuration = parse_ini_file('config.ini', true);
+$configuration = parse_ini_file('config.ini.example', true);
 
 $connection = mysqli_connect(
   $configuration['db']['host'],

@@ -1,35 +1,70 @@
 <?php
 
-$type = explode("/", $_FILES['userfile']['type']);
-$imgType =$type[1];
-$type = $type[0];
+$imgName = $_FILES['userfile']['name'];
+$fileType = explode("/", $_FILES['userfile']['type'])[0];
+$imgType = explode("/", $_FILES['userfile']['type'])[1];
+$imgTmpName =  $_FILES['userfile']['tmp_name'];
+$imgSize = getimagesize($imgTmpName);
 
-//Проверка типа
-if ($type != "image") {
+//Отсеивание не изображений
+
+if ($fileType != "image") {
     echo "Недопустимый формат файла";
 }
 
-
-//Это изображение
 else {
+    
+    //Создаем GD изображение
+    $img = createGD ($imgTmpName, $imgType);
 
-    // Создаем изображение png или jpeg
+    //Создаем миниатюру    
+    $imgMini = createMini($img, $imgSize);
+
+    //Даем название миниатюре
+    $imgMiniName = getMiniName($imgName);
+
+    //Проверяем размер изображения и обрезаем при необходимости
+    $img = imgCut($img, $imgSize);
+
+    //Сохраняем изображение в папку "uploads"
+    imgSave($img, $imgName, $imgType);
+
+    //Сохраняем миниатюру в папку "uploads"
+    imgSave($imgMini, $imgMiniName, $imgType);
+
+    //Открываем БД
+    require_once('db_connection.php');
+
+    //Сохраняем имя изображения и миниатюры в БД
+    imgSaveDB($connection, $imgName, $imgMiniName);
+
+    //Выводим галерею
+    showGallery($connection);
+
+    //Обновляем просмотры
+    updateViews($connection);
+
+    //Закрываем БД
+    mysqli_close($connection); 
+}
+
+function createGD(string $tmpName, string $imgType): object {
 
     switch ($imgType) {
         case "png":
-            $im = imagecreatefrompng($_FILES['userfile']['tmp_name']);
+            $im = imagecreatefrompng($tmpName);
+            return $im;
             break;
 
         case "jpeg":
-            $im = imagecreatefromjpeg($_FILES['userfile']['tmp_name']);
+            $im = imagecreatefromjpeg($tmpName);
+            return $im;
             break;
     }
+}
 
-    $imgSize = getimagesize($_FILES['userfile']['tmp_name']);
-
-
-    //Создаем миниатюру
-
+function createMini(object $img, array $imgSize): object {
+    
     $width = 200;
     $height = 200;
     $ratio = $imgSize[0] / $imgSize[1];
@@ -40,66 +75,71 @@ else {
         $height = $width / $ratio;
      }
 
-     $mini = imagecreatetruecolor($width, $height);
-     imagecopyresampled($mini, $im, 0, 0, 0, 0, $width, $height, $imgSize[0], $imgSize[1]);
+     $imgMini = imagecreatetruecolor($width, $height);
+     imagecopyresampled($imgMini, $img, 0, 0, 0, 0, $width, $height, $imgSize[0], $imgSize[1]);
+     return $imgMini;
+}
 
+function getMiniName(string $imgName): string {
 
-    // Проверяем на размер и обрезаем, если он больше
+    $NameList = explode(".", $imgName);
+    $miniName = implode("",array_slice($NameList, 0, count($NameList)-1)) . "_mini." . implode("",array_slice($NameList, count($NameList)-1, count($NameList)));
+    return $miniName;
+}
+
+function imgCut(object $img, array $imgSize): object {
 
     if ($imgSize[0] > 320 || $imgSize[1] > 320) {
         if ($imgSize[0] < $imgSize[1]) {
-            $im = imagecrop($im, ['x' => 0, 'y' => 0, 'width' => $imgSize[0], 'height' => 320]);
+            $img = imagecrop($img, ['x' => 0, 'y' => 0, 'width' => $imgSize[0], 'height' => 320]);
         }
         else {
-            $im = imagecrop($im, ['x' => 0, 'y' => 0, 'width' => 320, 'height' => $imgSize[1]]);
+            $img = imagecrop($img, ['x' => 0, 'y' => 0, 'width' => 320, 'height' => $imgSize[1]]);
         }
     }
+    return $img;
+}
 
-    //Сохраняем изображение и миниатюру
+function imgSave(object $img, string $imgName, string $imgType): void {
 
     $uploadPath = $_SERVER['DOCUMENT_ROOT'] . "/uploads/";
-    $uploadfile = $uploadPath . basename($_FILES['userfile']['name']);
-
-    $imName = explode(".", $_FILES['userfile']['name']);
-    $miniName = implode("",array_slice($imName, 0, count($imName)-1)) . "_mini." . implode("",array_slice($imName, count($imName)-1, count($imName)));
-    $uploadMiniFile = $uploadPath . $miniName;
+    $uploadfile = $uploadPath . basename($imgName);
 
     switch ($imgType) {
         case "png":
-            imagepng($im, $uploadfile);
-            imagepng($mini, $uploadMiniFile);
+            imagepng($img, $uploadfile);
             break;
 
         case "jpeg":
-            imagejpeg($im, $uploadfile);
-            imagejpeg($mini, $uploadMiniFile);
+            imagejpeg($img, $uploadfile);
+            break;
     }
+}
 
-    //Сохраняем имя в БД
+function imgSaveDB(object $connectionDB, string $imgName, string $imgMiniName): void {
 
-    require_once('db_connection.php');
+    $insertQuery = "INSERT INTO gallery (`image_name`, `image_mini` ,`image_count`) VALUES ('".$imgName."', '".$imgMiniName."', 0)";
+    mysqli_query($connectionDB, $insertQuery);
+}
 
-    $insertQuery = "INSERT INTO gallery (`image_name`, `image_mini` ,`image_count`) VALUES ('".$_FILES['userfile']['name']."', '".$miniName."', 0)";
-    mysqli_query($connection, $insertQuery);
-
-    //Выводим галерею
-
+function showGallery(object $connectionDB): void {
     $select = "SELECT * FROM gallery";
-    $selectResult = mysqli_query($connection, $select);
+    $selectResult = mysqli_query($connectionDB, $select);
 
     while ($row = mysqli_fetch_assoc($selectResult)) {
         $filePath = "http://" . $_SERVER['SERVER_NAME'] . "/uploads/" . $row['image_name'];
         echo "<img src = $filePath> <br>";
-
-        //Обновляем просмотры
-
-        $updateQuery = "UPDATE gallery SET `image_count` = '".++$row['image_count']."' WHERE `image_name` = '".$row['image_name']."'";
-        mysqli_query($connection, $updateQuery);
-
     }
+}
 
-    //Закрываем таблицу
-    mysqli_close($connection);
+function updateViews(object $connectionDB): void {
+    $select = "SELECT * FROM gallery";
+    $selectResult = mysqli_query($connectionDB, $select);
+
+    while ($row = mysqli_fetch_assoc($selectResult)) {
+        $updateQuery = "UPDATE gallery SET `image_count` = '".++$row['image_count']."' WHERE `image_name` = '".$row['image_name']."'";
+        mysqli_query($connectionDB, $updateQuery);
+    }
 }
 
 
