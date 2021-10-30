@@ -1,22 +1,33 @@
 <?php
 
+function getPasswordhash(){
+    $link = setupConnection();
+  
+  $sql = "SELECT * FROM gallery . users";
+  $result = mysqli_query($link, $sql);
+  while($row = mysqli_fetch_array($result)){
+    $passhash = $row['pass'];
+  }
+  return $passhash;
+  }
+
 function validatePasswordWithDatabase(string $login, string $password, bool $remember = false) {
     $user = getUserByLogin($login);
     
-  if(!empty($user)){
-        if(password_verify($password, $user['pass'])){
+if(!empty($user)){
 
-            if($remember){
+    if(password_verify($password, $user['pass'])){
 
-                rememberUser($user['pass'], $login);
-            }
-              return true;
-            }
-            else{
-                return false;
-            } 
+        if($remember){
+            rememberUser($user['pass'], $login);
         }
+
+        return true;
+    }
+    else{
+        return false;
     } 
+}
 
 function rememberUser($passhash, $login) {
     $token = $passhash . md5($login);
@@ -29,7 +40,7 @@ function getUsertime(){
     $date = date("U");
     $user_time = ($date - $_SESSION['session_time']);
   echo "Вы провели на сайте " . $user_time . " секунд <br>"; 
-  }
+}
 
 // Функция проверки авторизации пользователя по cookie
 function checkCookie(): bool{ 
@@ -49,4 +60,6 @@ function checkCookie(): bool{
 
     return false;
 }
+}
+echo "auth подключен";
 ?>

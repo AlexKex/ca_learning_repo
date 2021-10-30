@@ -1,5 +1,16 @@
 <?php
 
+/*function getPasswordhash(){
+  $link = setupConnection();
+
+$sql = "SELECT * FROM gallery . users";
+$result = mysqli_query($link, $sql);
+while($row = mysqli_fetch_array($result)){
+  $passhash = $row['pass'];
+}
+return $passhash;
+}
+*/
 function getUserByLogin($login): array{
     $link = setupConnection();
 
@@ -22,16 +33,6 @@ function writeUserHistiry($myfile, $history){
   fwrite($myfile, $history);
   fclose($myfile);
 }
-
-function getPasswordhash(){
-  $link = setupConnection();
-
-$sql = "SELECT * FROM gallery . users";
-$result = mysqli_query($link, $sql);
-while($row = mysqli_fetch_array($result)){
-  $passhash = $row['pass'];
-}
-return $passhash;
-}
+echo "user подключен";
 
 ?>

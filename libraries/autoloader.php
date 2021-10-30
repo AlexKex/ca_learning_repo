@@ -1,5 +1,4 @@
 <?php
-//echo "файл autoloader подключен" . "<br>";
 $libDir = scandir("./libraries");
 $libDir = array_diff($libDir,["..", "."]);
 //var_dump($libDir) ;
@@ -17,5 +16,6 @@ foreach ($libDir as $file) {
     }
   }
 }
+echo "Автолоудер подключен";
 
 ?>
