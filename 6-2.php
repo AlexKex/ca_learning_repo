@@ -12,11 +12,11 @@ function findSubstringInCsv ( string $fileAddress, string $needle){
             $string = implode(";", $data);
             if(str_contains($string, $needle)){
                 echo $string . "<br>";
-                break;
+                return;
             }
         }
     }
     fclose($fileAddress);
 }
-findSubstringInCsv ("test.csv", "1");
+echo findSubstringInCsv ("test.csv", "1");
 
