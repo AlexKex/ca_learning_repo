@@ -1,0 +1,29 @@
+<?php
+session_start();
+$_SESSION['session_time'] = date("U");
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login page</title>
+</head>
+<body>
+  <form action="login.php" method="post">
+      <p>
+        <p>Логин:</p>
+        <input type="text" name="login">
+      </p>
+      <p>
+        <p>Пароль:</p>
+        <input type="password" name="password">
+      </p>
+      <p>
+        <p>Запомнить меня:</p>
+        <input type="checkbox" name="rememberme">
+      </p>
+      <p><input type="submit" name="Войти"></p>
+  </form>
+
+</body>
+</html>
