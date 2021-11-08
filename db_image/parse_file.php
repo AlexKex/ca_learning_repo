@@ -15,7 +15,7 @@ if($type != 'image/jpeg'){
 else{
     move_uploaded_file($tmp_name, "uploads/" . $name);
     echo "Файл загружен!";
-     echo "Файл загружен!";
+
     require_once('db_connection.php');
     $uploader = $_SESSION['uploads/'];
     $uploaddir = "Application/MAMP/htdocs/$uploader/";
