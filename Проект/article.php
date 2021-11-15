@@ -1,20 +1,6 @@
 <?php
-    require_once ('autoloader.php');
-    
+    require_once ('autoloader.php');    
     $artName = getArtName($_GET['article']);
-
-    echo "<h3>$artName</h3>";
-    //Отображение текста статьи
-    getArtText($artName);
-
-    echo "<h5>Комментарии</h5>";
-    //Отображение комментариев
-    showComments($artName);
-
-    //Отображение формы создания нового комментария
-    if (checkRole("leaveComment")){
-        commentForm($artName);
-    }
 ?>
 
 <!DOCTYPE html>
@@ -25,6 +11,26 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+<h3><?php echo $artName; ?></h3>
+<div><?php echo getArtText($artName); ?></div>
+
+<h5>Комментарии</h5>
+<?php foreach(showComments($artName) as $key => $data): ?>    
+    <p id= <?php echo $key; ?>><?php echo $data; ?></p>
+<?php endforeach; ?>
+
+
+
+<?php if (checkRole("leaveComment")): ?>
+    <h5>Оставить свой комментарий</h5>
+    <form action='com_save.php' method = 'POST'>
+    <p><label for='author'>Имя<label><input type='text' id='author' name='author'/></p>
+    <p><label for='comment'>Ваш комментарий<label><textarea id='comment' name='comment'></textarea></p>
+    <p><input type='submit' value='Отправить'/></p>
+    <p><input type='hidden' name='art_name' value=<?php echo $artName; ?>></p>
+    </form>
+<?php endif; ?>
 
 </body>
 </html>

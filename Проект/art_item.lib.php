@@ -2,12 +2,8 @@
 
 function getArtName(int $id): string {
 
-    $connection = setupConnection();
-
-    $userSqlStatement = mysqli_prepare($connection, "SELECT * FROM articles WHERE id = ?");
-    mysqli_stmt_bind_param($userSqlStatement, "s", $id);
-    mysqli_stmt_execute( $userSqlStatement);
-    $result = mysqli_stmt_get_result($userSqlStatement);
+    $stmt = "SELECT * FROM articles WHERE id = ?";
+    $result = executePreparedStmt($stmt, $id, true);
 
     $artName = "";
 
@@ -16,11 +12,15 @@ function getArtName(int $id): string {
             $artName = $row['art_name'];
         }
     }
+
+    else{
+        $artName = "ошибка получение имени";
+    }
     return $artName;
 }
 
 //Функции для отображения статьи
-function getArtText(string $name): void {
+function getArtText(string $name): string {
 
     $filePath = "texts/" . $name . ".txt";
     $file = fopen($filePath, "r");
@@ -36,40 +36,28 @@ function getArtText(string $name): void {
         }
     }
 
-    echo "<div> $output </div>";
+    return $output;
     fclose($file);
 }
 
 //Функции для отображения комментариев
-function showComments(string $name): void {
+function showComments(string $name): array {
 
     $connection = setupConnection();
 
     $select = "SELECT * FROM comments";
-    $selectResult = mysqli_query($connection, $select);    
+    $selectResult = mysqli_query($connection, $select); 
+    $comments = [];   
 
     if ($selectResult != false) {
         while ($row = mysqli_fetch_assoc($selectResult)) {
             if ($row['art_name'] == $name){
-                $date = "<p id = 'date'>".$row['date']."</p>";
-                $author = "<p id = 'author'>".$row['author'].":</p>";
-                $text = "<p id = 'comment'>".$row['com_text']."</p>";
-                echo $date, $author, $text;
+                $date = $row['date'];
+                $author = $row['author'];
+                $text = $row['com_text'];
+                $comments = ['date' => $date, 'author' => $author, 'text' => $text];
             }            
         }
     }
-}
-
-//Функция для отображения формы
-function commentForm($artName): void {
-
-    $form = 
-    "<form action='com_save.php' method = 'POST'>
-    <p><label for='author'>Имя<label><input type='text' id='author' name='author'/></p>
-    <p><label for='comment'>Ваш комментарий<label><textarea id='comment' name='comment'></textarea></p>
-    <p><input type='submit' value='Отправить'/></p>
-    <p><input type='hidden' name='art_name' value=$artName></p>
-    </form>";    
-    
-    echo "<h5>Оставить свой комментарий</h5>" . $form;    
+    return $comments;
 }

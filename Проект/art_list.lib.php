@@ -15,7 +15,7 @@ function showArticles(): void {
         while ($row = mysqli_fetch_assoc($selectResult)) {
             $name = $row['art_name'];
             $id = $row['id'];
-            echo "<li><a href='http://homestead.test/blog/article.php?article=$id'> $name </a></li>";
+            echo "<li><a href='/blog/article.php?article=$id'> $name </a></li>";
         }
     }
 }
