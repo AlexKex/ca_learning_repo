@@ -3,7 +3,7 @@
 
 class Customer {
 
-    public $CustomerId;
+    public $customerId;
     public $login;
     public $email;
     public $address;
@@ -17,7 +17,7 @@ class Customer {
 
 class Manager {
 
-    public $ManagerId;
+    public $managerId;
     public $login;
 
     public function addProduct();
@@ -32,7 +32,7 @@ class Category {
 
 class Product extends Category{
 
-    public $ProductId;
+    public $productId;
     public $data;
     public $image;
 
