@@ -2,7 +2,6 @@
 
 namespace PrincessManny\Controller;
 
-use PrincessManny\Model\User;
 use PrincessManny\Core\View;
 
 class ActionController
